@@ -33,6 +33,10 @@ In order to deploy and publish the [application to Internet](https://adidas-tech
 - DockerHub: docker images repository where generated images are saved.
 - GitHub Actions: a workflow (pipeline) has been created for every microservice and for the front-end in order to deploy the projects into AWS.
 
+The following diagram shows the proposed architecture at high-level:
+
+![Proposed architecture](assets/diagram.png)
+
 ## Deployment
 
 As mentioned before, the application has been published in an AWS EC2 instance. To deploy new features and changes to AWS, only is necessary to push changes to the main branch of each project. This is done by a GitHub Action present in every project:
