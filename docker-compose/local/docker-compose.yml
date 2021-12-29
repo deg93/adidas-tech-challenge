@@ -1,0 +1,67 @@
+version: '3'
+
+services:
+  # Traefik
+  reverse-proxy:
+    image: traefik:v2.5
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "8000:80"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+  
+  # Email API
+  email-api:
+    image: enjuanes/adidas-subscriptions-email-api:latest
+    environment:
+      - "SPRING_PROFILES_ACTIVE=dev"
+    ports:
+      - "8082:8082"
+
+  # Internal API database
+  internal-api-database:
+    image: mongo:4.4-rc
+    ports:
+      - "27102:27017"
+
+  # Internal API
+  internal-api:
+    image: enjuanes/adidas-subscriptions-internal-api:latest
+    environment:
+      - "SPRING_PROFILES_ACTIVE=dev"
+      - "SPRING_DATA_MONGODB_URI=mongodb://internal-api-database:27017"
+      - "APPLICATION_EMAIL_API_URI=http://email-api:8082/api/emails"
+      - "APPLICATION_FRONT_END_URI=http://localhost:8000"
+    ports:
+      - "8081:8081"
+
+  # Public API database
+  public-api-database:
+    image: mongo:4.4-rc
+    ports:
+      - "27101:27017"
+
+  # Public API
+  public-api:
+    image: enjuanes/adidas-subscriptions-public-api:latest
+    environment:
+      - "SPRING_PROFILES_ACTIVE=dev"
+      - "SPRING_DATA_MONGODB_URI=mongodb://public-api-database:27017"
+      - "APPLICATION_INTERNAL_API_URI=http://internal-api:8081/api/subscriptions"
+    ports:
+      - "8080:8080"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.public-api.rule=PathPrefix(`/api/`)"
+      - "traefik.http.routers.public-api.entrypoints=web"
+
+  # Web App
+  web-app:
+    image: enjuanes/adidas-subscriptions-webapp
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.web-app.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.web-app.entrypoints=web"

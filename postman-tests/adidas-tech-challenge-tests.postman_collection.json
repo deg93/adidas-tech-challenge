@@ -1,0 +1,483 @@
+{
+	"info": {
+		"_postman_id": "b53aecc3-7144-4f3c-9f92-49ccc2575d0c",
+		"name": "Adidas Tech Challenge tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "A. Subscriptions creation",
+			"item": [
+				{
+					"name": "01. Create subscription with invalid email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"  pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"birthDate\": \"1998-12-28\",\r\n  \"consent\": true,\r\n  \"email\": \"example\",\r\n  \"firstName\": \"Alice\",\r\n  \"gender\": \"FEMALE\",\r\n  \"newsletterId\": \"{{testNewsletterId}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{publicApiBaseUrl}}/api/subscriptions",
+							"host": [
+								"{{publicApiBaseUrl}}"
+							],
+							"path": [
+								"api",
+								"subscriptions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "02. Create subscription without consent Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"  pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"birthDate\": \"1998-12-28\",\r\n  \"consent\": false,\r\n  \"email\": \"{{testEmail}}\",\r\n  \"firstName\": \"Alice\",\r\n  \"gender\": \"FEMALE\",\r\n  \"newsletterId\": \"{{testNewsletterId}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{publicApiBaseUrl}}/api/subscriptions",
+							"host": [
+								"{{publicApiBaseUrl}}"
+							],
+							"path": [
+								"api",
+								"subscriptions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "03. Create subscription",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"  pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"User ID is a valid UUID\", function () {\r",
+									"  const responseJson = pm.response.json();\r",
+									"  pm.collectionVariables.set(\"testCreatedSubscriptionId\", responseJson.id);\r",
+									"  pm.expect(responseJson.userId).to.have.lengthOf(36);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"User access ID is not present\", function () {\r",
+									"  const responseJson = pm.response.json();\r",
+									"  pm.expect(responseJson.userAccessId).to.eql(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"birthDate\": \"1998-12-28\",\r\n  \"consent\": true,\r\n  \"email\": \"{{testEmail}}\",\r\n  \"firstName\": \"Alice\",\r\n  \"gender\": \"FEMALE\",\r\n  \"newsletterId\": \"{{testNewsletterId}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{publicApiBaseUrl}}/api/subscriptions",
+							"host": [
+								"{{publicApiBaseUrl}}"
+							],
+							"path": [
+								"api",
+								"subscriptions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "04. Create duplicated subscription",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 409\", function () {\r",
+									"  pm.response.to.have.status(409);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"birthDate\": \"1998-12-28\",\r\n  \"consent\": true,\r\n  \"email\": \"{{testEmail}}\",\r\n  \"firstName\": \"Alice\",\r\n  \"gender\": \"FEMALE\",\r\n  \"newsletterId\": \"{{testNewsletterId}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{publicApiBaseUrl}}/api/subscriptions",
+							"host": [
+								"{{publicApiBaseUrl}}"
+							],
+							"path": [
+								"api",
+								"subscriptions"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "B. Subscriptions retrieval",
+			"item": [
+				{
+					"name": "01. Retrieve one subscription",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"User ID is a valid UUID\", function () {\r",
+									"  const responseJson = pm.response.json();\r",
+									"  pm.expect(responseJson.userId).to.have.lengthOf(36);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"User access ID is not present\", function () {\r",
+									"  const responseJson = pm.response.json();\r",
+									"  pm.expect(responseJson.userAccessId).to.eql(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{publicApiBaseUrl}}/api/subscriptions/{{testCreatedSubscriptionId}}",
+							"host": [
+								"{{publicApiBaseUrl}}"
+							],
+							"path": [
+								"api",
+								"subscriptions",
+								"{{testCreatedSubscriptionId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "02. Retrieve all subscriptions without JWT",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 403\", function () {\r",
+									"  pm.response.to.have.status(403);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{publicApiBaseUrl}}/api/subscriptions",
+							"host": [
+								"{{publicApiBaseUrl}}"
+							],
+							"path": [
+								"api",
+								"subscriptions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "03. Retrieve all subscriptions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// Load user access ID\r",
+									"const testCreatedSubscriptionId = pm.collectionVariables.get(\"testCreatedSubscriptionId\");\r",
+									"const responseJson = pm.response.json();\r",
+									"const userAccessId = responseJson.find(subscription => testCreatedSubscriptionId === subscription.id).userAccessId;\r",
+									"pm.collectionVariables.set(\"testUserAccessId\", userAccessId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{validJwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{publicApiBaseUrl}}/api/subscriptions",
+							"host": [
+								"{{publicApiBaseUrl}}"
+							],
+							"path": [
+								"api",
+								"subscriptions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "04. Retrieve subscriptions for invalid user access ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {\r",
+									"  pm.response.to.have.status(404);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{publicApiBaseUrl}}/api/subscriptions?userAccessId=this-is-an-example",
+							"host": [
+								"{{publicApiBaseUrl}}"
+							],
+							"path": [
+								"api",
+								"subscriptions"
+							],
+							"query": [
+								{
+									"key": "userAccessId",
+									"value": "this-is-an-example"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "05. Retrieve subscriptions for user access ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Previously created subscription is present\", function () {\r",
+									"  const testCreatedSubscriptionId = pm.collectionVariables.get(\"testCreatedSubscriptionId\");\r",
+									"  const responseJson = pm.response.json();\r",
+									"  const testCreatedSubscription = responseJson.find(subscription => testCreatedSubscriptionId === subscription.id);\r",
+									"  pm.expect(testCreatedSubscription.id).to.eql(testCreatedSubscriptionId);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{publicApiBaseUrl}}/api/subscriptions?userAccessId={{testUserAccessId}}",
+							"host": [
+								"{{publicApiBaseUrl}}"
+							],
+							"path": [
+								"api",
+								"subscriptions"
+							],
+							"query": [
+								{
+									"key": "userAccessId",
+									"value": "{{testUserAccessId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "C. Subscriptions cancellation",
+			"item": [
+				{
+					"name": "01. Cancel subscription",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {\r",
+									"  pm.response.to.have.status(204);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{publicApiBaseUrl}}/api/subscriptions/{{testCreatedSubscriptionId}}",
+							"host": [
+								"{{publicApiBaseUrl}}"
+							],
+							"path": [
+								"api",
+								"subscriptions",
+								"{{testCreatedSubscriptionId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "publicApiBaseUrl",
+			"value": "http://localhost:8000"
+		},
+		{
+			"key": "testEmail",
+			"value": "alice@example.org"
+		},
+		{
+			"key": "testNewsletterId",
+			"value": "some-newsletter"
+		},
+		{
+			"key": "testCreatedSubscriptionId",
+			"value": ""
+		},
+		{
+			"key": "testUserAccessId",
+			"value": ""
+		},
+		{
+			"key": "validJwt",
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzeXN0ZW0iLCJhdXRoIjoiUk9MRV9BRE1JTiIsImlhdCI6MTUxNjIzOTAyMn0.2X1kxnV6TRP3sLLbkw9gRG5PRSz-bq5-UUMkaqVJRNU"
+		}
+	]
+}

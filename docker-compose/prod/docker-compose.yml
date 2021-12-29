@@ -1,0 +1,98 @@
+version: '3'
+
+services:
+  # Traefik
+  reverse-proxy:
+    image: traefik:v2.5
+    restart: always
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "../volumes/letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+  
+  # Email API
+  email-api:
+    image: enjuanes/adidas-subscriptions-email-api:latest
+    restart: always
+    environment:
+      - "SPRING_PROFILES_ACTIVE=prod"
+      - "APPLICATION_BASIC_AUTH_USER=${EMAIL_API_BASIC_AUTH_USER}"
+      - "APPLICATION_BASIC_AUTH_PASSWORD=${EMAIL_API_BASIC_AUTH_PASSWORD}"
+      - "APPLICATION_SEND_GRID_API_KEY=${EMAIL_API_SENDGRID_API_KEY}"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.email-api.rule=Host(`email-api.adidas-tech-challenge.davidenjuan.es`)"
+      - "traefik.http.routers.email-api.entrypoints=websecure"
+      - "traefik.http.routers.email-api.tls.certresolver=letsencrypt"
+
+  # Internal API database
+  internal-api-database:
+    image: mongo:4.4-rc
+    restart: always
+    volumes:
+      - "../volumes/internal-api-database:/data/db"
+
+  # Internal API
+  internal-api:
+    image: enjuanes/adidas-subscriptions-internal-api:latest
+    restart: always
+    environment:
+      - "SPRING_PROFILES_ACTIVE=prod"
+      - "SPRING_DATA_MONGODB_URI=mongodb://internal-api-database:27017"
+      - "APPLICATION_JWT_BASE64_SECRET=${JWT_BASE64_SECRET}"
+      - "APPLICATION_JWT_TOKEN_VALIDITY_SECONDS=86400"
+      - "APPLICATION_EMAIL_API_URI=http://email-api:8080/api/emails"
+      - "APPLICATION_EMAIL_API_USER=${EMAIL_API_BASIC_AUTH_USER}"
+      - "APPLICATION_EMAIL_API_PASSWORD=${EMAIL_API_BASIC_AUTH_PASSWORD}"
+      - "APPLICATION_FRONT_END_URI=https://adidas-tech-challenge.davidenjuan.es"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.internal-api.rule=Host(`internal-api.adidas-tech-challenge.davidenjuan.es`)"
+      - "traefik.http.routers.internal-api.entrypoints=websecure"
+      - "traefik.http.routers.internal-api.tls.certresolver=letsencrypt"
+
+  # Public API database
+  public-api-database:
+    image: mongo:4.4-rc
+    restart: always
+    volumes:
+      - "../volumes/public-api-database:/data/db"
+
+  # Public API
+  public-api:
+    image: enjuanes/adidas-subscriptions-public-api:latest
+    restart: always
+    environment:
+      - "SPRING_PROFILES_ACTIVE=prod"
+      - "SPRING_DATA_MONGODB_URI=mongodb://public-api-database:27017"
+      - "APPLICATION_JWT_BASE64_SECRET=${JWT_BASE64_SECRET}"
+      - "APPLICATION_JWT_TOKEN_VALIDITY_SECONDS=86400"
+      - "APPLICATION_INTERNAL_API_URI=http://internal-api:8080/api/subscriptions"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.public-api.rule=Host(`public-api.adidas-tech-challenge.davidenjuan.es`) || (Host(`adidas-tech-challenge.davidenjuan.es`) && PathPrefix(`/api/`))"
+      - "traefik.http.routers.public-api.entrypoints=websecure"
+      - "traefik.http.routers.public-api.tls.certresolver=letsencrypt"
+
+  # Web App
+  web-app:
+    image: enjuanes/adidas-subscriptions-webapp
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.web-app.rule=Host(`adidas-tech-challenge.davidenjuan.es`)"
+      - "traefik.http.routers.web-app.entrypoints=websecure"
+      - "traefik.http.routers.web-app.tls.certresolver=letsencrypt"
