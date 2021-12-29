@@ -50,9 +50,9 @@ As a future improvement, these pipelines should run the tests before publishing 
 
 To deploy the services in a local environment, the easiest way is to execute the [Docker Compose file for local environment](docker-compose/local/docker-compose.yml):
 ```
-$ cd /path/to/local/docker-compose.yml
-$ docker-compose pull
-$ docker-compose up -d
+cd /path/to/local/docker-compose.yml
+docker-compose pull
+docker-compose up -d
 ```
 To execute every service individually (without Docker), please, review the README.md file of the desired project.
 
