@@ -54,6 +54,13 @@ $ cd /path/to/local/docker-compose.yml
 $ docker-compose pull
 $ docker-compose up -d
 ```
+Once the containers are up and running, a browser can be opened in the following URLs:
+
+- Public API docs: [http://localhost:8080/swagger-ui/](http://localhost:8080/swagger-ui/)
+- Internal API docs: [http://localhost:8081/swagger-ui/](http://localhost:8081/swagger-ui/)
+- Email API docs: [http://localhost:8082/swagger-ui/](http://localhost:8082/swagger-ui/)
+- Web application: [http://localhost:8000/](http://localhost:8080/)
+
 To execute every service individually (without Docker), please, review the README.md file of the desired project.
 
 ## Tests
